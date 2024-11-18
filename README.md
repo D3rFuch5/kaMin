@@ -1,1 +1,1 @@
-# kaMin Die kMeans-App
+# kaMin - Die kMeans-App
