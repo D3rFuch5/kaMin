@@ -407,7 +407,7 @@ class Frame_Training(tk.Frame):
                                                             style="whiteCheckButton.TCheckbutton")
         self.ck_btn_show_centroid_history.grid(column=3, row=0, sticky="nw")
         self.ck_btn_show_decision_areas = ttk.Checkbutton(master=self.frm_display_model_controls,
-                                                          text="Decision Surfaces zeigen",
+                                                          text="Decision Areas zeigen",
                                                           takefocus=0,
                                                           variable=self.show_decision_areas,
                                                           onvalue=True,
