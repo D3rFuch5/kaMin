@@ -4,9 +4,6 @@ import random
 import time
 import src.Exceptions
 
-ELBOW_CALCULATION_WAY_INERTIA = "Inertia"
-
-
 def euclidean_distance(point1, point2):
     """
     Berechnet für die zwei übergebenen Punkte den euklidischen Abstand
@@ -197,26 +194,27 @@ def calculate_final_clusters(dataset, initial_centroids):
     return clusters_current_centroids
 
 
-def calculate_inertia(FINAL_CLUSTERS_data_split):
+def calculate_WCSS(FINAL_CLUSTERS_data_split):
     """
-    Berechnet die Inertia (Trägheit) für die übergebenen finalen Cluster-Zentren und zugehörigen Teildatensätze
+    Berechnet die Within-Cluster Sum of Squares (WCSS) für die übergebenen finalen Cluster-Zentren und zugehörigen
+    Teildatensätze.
     :param FINAL_CLUSTERS_data_split: Dictionary: key => finales Cluster-Zentrum als Tupel;
                                                    value => Liste von Tupeln, die den zum Cluster-Zentrum gehörenden
                                                             Teildatensatz darstellt.
-    :return: Inertia-Wert für die übergebenen Cluster-Zentren und deren zugeordnete Teildatensätze.
+    :return: WCSS-Wert für die übergebenen Cluster-Zentren und deren zugeordnete Teildatensätze.
     """
-    within_clusters_squared_sum = 0
+    within_cluster_sum_of_squares = 0
     for centroid in FINAL_CLUSTERS_data_split:
         for d_elm in FINAL_CLUSTERS_data_split[centroid]:
-            within_clusters_squared_sum += squared_euclidean_distance(point1=centroid, point2=d_elm)
-    return within_clusters_squared_sum
+            within_cluster_sum_of_squares += squared_euclidean_distance(point1=centroid, point2=d_elm)
+    return within_cluster_sum_of_squares
 
 
 def elbow_analysis(dataset, max_value_of_k):
     """
     Berechnet jeweils für k = 1,..., max_value_of_k und zufällig, aus dataset ausgewählte, initiale Cluster-Zentren
     mithilfe des k-Means-Algorithmus die zugehörigen finalen Cluster-Zentren und die zugehörige Aufteilung der
-    Datenpunkte auf die bestimmten finalen Cluster-Zentren. Dafür werden dann die Inertia-Werte für den Ellbogengraph
+    Datenpunkte auf die bestimmten finalen Cluster-Zentren. Dafür werden dann die WCSS-Werte für den Ellbogengraph
     berechnet.
     WICHTIG: Voraussetzung ist, dass für jeden Wert von k eine Aufteilung gefunden werden kann, sodass KEIN Cluster
              leer ist.
@@ -224,7 +222,7 @@ def elbow_analysis(dataset, max_value_of_k):
     :param max_value_of_k: Grenze bis zu der Parameter k laufen soll.
     :exception src.Exceptions.CalculationTooLong: Wird geworfen, falls die Suche nach den nicht-leeren, finalen Cluster-
                                                   Zentren mehr als 2 Minuten dauert.
-    :return: Liste der Inertia-Werte für k = 1 bis max_value_of_k;
+    :return: Liste der WCSS-Werte für k = 1 bis max_value_of_k;
              Liste an Dictionaries, welche an der k-ten Stelle ein Dictionary (key=> finales Zentrum als Tupel,
              values=Liste an Tupeln der Datenpunkte zu den jeweiligen Zentren) mit den finalen Zentren und den zugehörig
              aufgeteilten Datensatz auf die Zentren enthält.
@@ -262,7 +260,7 @@ def elbow_analysis(dataset, max_value_of_k):
         # Falls die Berechnung länger als 2 Minuten dauert, wird eine Exception geworfen
         if time.time() - time_start > 120:
             raise src.Exceptions.CalculationTooLong
-    return [calculate_inertia(FINAL_CLUSTERS_data_split=split_set) for split_set in
+    return [calculate_WCSS(FINAL_CLUSTERS_data_split=split_set) for split_set in
             list_final_clusters_dataset_split_dicts], list_final_clusters_dataset_split_dicts
 
 

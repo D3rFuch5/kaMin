@@ -607,7 +607,7 @@ class Frame_Training(tk.Frame):
         # Decision Areas aus vorherigem Training (bis auf die initialen DA)
         Plot_Utils_Model.reset_centroids_to_start_of_training(current_plot_container=self.current_plot_model)
 
-        # Ausblenden eines ggf. vorhandenen Decision Surfaces (Für Historie nicht nötig, da diese immer komplett
+        # Ausblenden eines ggf. vorhandenen Decision Areas (Für Historie nicht nötig, da diese immer komplett
         # gelöscht wird beim Zurücksetzen auf den Vor-Trainings-Stand)
         Plot_Utils_Model.display_decision_areas(current_plot_container=self.current_plot_model,
                                                 fade_in_decision_areas=self.show_decision_areas.get())
@@ -1379,7 +1379,7 @@ class Frame_Training(tk.Frame):
         für die aktuelle Berechnung notwendigen Elemente der Distanzenplots und zeigt den Distanzenplot für das in der
         View ausgewählte k an.
         :param max_value_k: Obere Grenze des Werts für k; legt die x-Werte fest. Diese laufen von 1,...,k,
-                            Anzahl der als y-Werte übergebenen inertia_values_for_k_values übereinstimmen
+                            Anzahl der als y-Werte übergebenen wcss_values_for_k_values übereinstimmen
         :param values_y: y-Werte des Ellbogengraphs
         :param list_final_cluster_sets: Liste der Länge max_value_k. An jeder Position der Liste befindet sich ein Dictionary.
                                Dieses hat jeweils als keys => finale Cluster-Zentren, welche für k und die Datenpunkte
@@ -1388,7 +1388,7 @@ class Frame_Training(tk.Frame):
         """
         # Anzeige des Ellbogengraphs
         Plot_Utils_Analysis.draw_elbow_analysis_graph(current_figure=self.current_figure_analysis,
-                                                      max_value_of_k=max_value_k, inertia_values_for_k_values=values_y)
+                                                      max_value_of_k=max_value_k, wcss_values_for_k_values=values_y)
         # Entfernen ggf. vorhandener Distanzplots, die während dieser Aktivierung der Parameteranalyse berechnet und
         # angezeigt wurden
         Plot_Utils_Model.remove_distances_parameter_elbow_analysis(current_plot_container=self.current_plot_model)

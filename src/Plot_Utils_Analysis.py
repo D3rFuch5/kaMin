@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 from src import View_Frame_Training, Plot_Utils_Model
 
 AXIS_X_LABEL_ELBOW = "Werte von k"
-AXIS_Y_LABEL_ELBOW = "Inertia (Tr\u00E4gheit)"
+AXIS_Y_LABEL_ELBOW = "Within-Cluster Sum of Squares (WCSS)"
 AXIS_X_LABEL_SILHOUETTE = "Datenpunkte"
 AXIS_Y_LABEL_SILHOUETTE = "Silhouettenwerte"
 
@@ -35,7 +35,6 @@ def initialize_axes(current_figure):
     current_figure.subplots_adjust(bottom=0.1, top=0.9)
     current_axes = current_figure.get_axes()[0]
     current_axes.cla()
-    current_axes.set_title("Ellbogen-Analyse unter Verwendung von Inertia (Tr\u00E4gheit)")
     current_axes.set_xlabel(AXIS_X_LABEL_ELBOW)
     current_axes.set_ylabel(AXIS_Y_LABEL_ELBOW)
     current_axes.grid(True)
@@ -54,7 +53,6 @@ def reset_axes(current_figure, current_mode):
     current_axes = current_figure.get_axes()[0]
     current_axes.cla()
     if current_mode == View_Frame_Training.ANALYSIS_MODE_elbow:
-        current_axes.set_title("Ellbogen-Analyse unter Verwendung von Inertia (Tr\u00E4gheit)")
         current_axes.set_xlabel(AXIS_X_LABEL_ELBOW)
         current_axes.set_ylabel(AXIS_Y_LABEL_ELBOW)
     else:
@@ -62,25 +60,24 @@ def reset_axes(current_figure, current_mode):
         current_axes.set_ylabel(AXIS_Y_LABEL_SILHOUETTE)
 
 
-def draw_elbow_analysis_graph(current_figure, max_value_of_k, inertia_values_for_k_values):
+def draw_elbow_analysis_graph(current_figure, max_value_of_k, wcss_values_for_k_values):
     """
     Löscht den aktuell angezeigten Plot, setzt den Titel und die Achsenbezeichnungen für den Ellbogenplot und
     fügt der Ax in current_figure den Ellbogenplot für k=1,..., max_value_of_k als x-Werte und den
-    inertia_values_for_k_values als y-Werte hinzu.
+    wcss_values_for_k_values als y-Werte hinzu.
     :param current_figure: Figure, welche die Ax zur graphischen Anzeige des Analysegraphen enthält
     :param max_value_of_k: Obere Grenze des Werts für k; legt die x-Werte fest. Diese laufen von 1,...,k muss mit der
-                           Anzahl der als y-Werte übergebenen inertia_values_for_k_values übereinstimmen
-    :param inertia_values_for_k_values: y-Werte des Plots
+                           Anzahl der als y-Werte übergebenen wcss_values_for_k_values übereinstimmen
+    :param wcss_values_for_k_values: y-Werte des Plots
     """
     # Zurücksetzen des Plot-Layouts
     current_figure.subplots_adjust(bottom=0.1, top=0.9)
     current_axes = current_figure.get_axes()[0]
     current_axes.cla()
     current_axes.set_xlabel(AXIS_X_LABEL_ELBOW)
-    current_axes.set_title("Ellbogen-Analyse unter Verwendung von Inertia (Tr\u00E4gheit)")
     current_axes.set_ylabel(AXIS_Y_LABEL_ELBOW)
     # np.arange läuft bis zu stop exklusiv
-    current_axes.plot(np.arange(start=1, stop=max_value_of_k + 1), inertia_values_for_k_values, color='blue',
+    current_axes.plot(np.arange(start=1, stop=max_value_of_k + 1), wcss_values_for_k_values, color='blue',
                       linestyle='-', marker='o', )
 
 

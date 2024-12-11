@@ -998,7 +998,7 @@ class Controller_k_Means:
     def calculate_parameter_analysis(self):
         """
         Führt die Berechnungen der Parameteranalyse durch. Falls die Ellbogenanalyse ausgewählt ist, werden zuerst die
-        möglichen Werte für k, die Inertias und die Aufteilung der Datenpunkte auf die jeweiligen finalen Cluster-
+        möglichen Werte für k, die WCSS und die Aufteilung der Datenpunkte auf die jeweiligen finalen Cluster-
         Zentren bestimmt. Danach wird der Analysegraph gezeichnet die Elemente des Distanzen-Plots berechnet.
         Falls die Silhouetten-Analyse ausgewählt ist, wird zuerst der Wert von k bestimmt. Im Anschluss daran werden die
         Silhouetten und die mittleren Distanzen der Datenpunkte zum jeweils eigenen Cluster, als auch zum am nächsten
@@ -1015,14 +1015,14 @@ class Controller_k_Means:
         if self.view_main_frame.selected_analysis_mode.get() == self.ANALYSIS_MODE_elbow:
             max_k = min(self.DEFAULT_BORDER_K, len(self.read_in_dataset))
             try:
-                inertias, self.list_final_cluster_sets_distance_plot_elbow_analysis = Model_k_means.elbow_analysis(
+                wcss_values, self.list_final_cluster_sets_distance_plot_elbow_analysis = Model_k_means.elbow_analysis(
                     dataset=self.read_in_dataset, max_value_of_k=max_k)
                 # Der Slider muss zuerst auf 1 zurückgesetzt werden, da im nächsten Schritt der Wert des Sliders für das
                 # Update des Distanzplots verwendet wird; Verwendung der keys zulässig, da finale Cluster
                 self.reset_slider_k_treeview_data_parameter_analysis(max_value_k=max_k, centroids=list(
                     self.list_final_cluster_sets_distance_plot_elbow_analysis[0].keys()))
                 # Erstellt den Analysegraph und die Distanzen-Plots
-                self.view_main_frame.draw_parameter_analysis_elbow(max_value_k=max_k, values_y=inertias,
+                self.view_main_frame.draw_parameter_analysis_elbow(max_value_k=max_k, values_y=wcss_values,
                                                                    list_final_cluster_sets=self.list_final_cluster_sets_distance_plot_elbow_analysis)
                 self.view_main_frame.update_view_enable_tab_distance_plot(enable=True)
             except src.Exceptions.CalculationTooLong:
