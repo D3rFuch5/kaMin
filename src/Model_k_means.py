@@ -273,7 +273,7 @@ def calculate_mean_distance(datapoint_from, dataset_to):
     """
     current_sum = 0
     for point in dataset_to:
-        current_sum += squared_euclidean_distance(point1=datapoint_from, point2=point)
+        current_sum += euclidean_distance(point1=datapoint_from, point2=point)
     return current_sum / len(dataset_to)
 
 
@@ -334,7 +334,7 @@ def calculate_silhouette_scores_dataset(value_k, dataset):
                 distA = 0
                 for j_o in range(num_dataset):
                     if i_o != j_o:
-                        distA += squared_euclidean_distance(point1=final_clusters_dataset_split[centroid][i_o],
+                        distA += euclidean_distance(point1=final_clusters_dataset_split[centroid][i_o],
                                                             point2=final_clusters_dataset_split[centroid][j_o])
                 distA = distA / (num_dataset - 1)
                 # Berechnet den mittleren Abstand distB vom aktuellen Datenpunkt zu allen Datenpunkten des am nächsten
