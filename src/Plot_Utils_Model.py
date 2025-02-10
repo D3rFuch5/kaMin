@@ -63,6 +63,10 @@ class Plot_Container:
         # Enthält den Punkt, der als letztes geklickt wurde um das Ausblenden effizienter zu gestalten
         self.silhouette_analysis_last_clicked = ()
 
+        # Speichert die Tooltip-Annotation
+        self.tooltip_annotation = None
+        self.init_tooltip()
+
     def reset_plot_container(self, plot_dimensions, axis_labels):
         """
         Setzt den Plot_Container zurück. Dabei wird die Anzeigefläche (Axes) gesäubert, die Achsenbezeichnungen werden
@@ -96,6 +100,14 @@ class Plot_Container:
         self.elbow_analysis_distances_objects.clear()
         self.silhouette_analysis_distances_objects.clear()
         self.silhouette_analysis_last_clicked = ()
+        self.init_tooltip()
+        self.tooltip_annotation.set_visible(False)
+
+    def init_tooltip(self):
+        self.tooltip_annotation = self.plot_axes.annotate("abcdefghi", xy=(10,10), annotation_clip=False, va='center', xycoords='data',
+                xytext=(6, 8), textcoords='offset points')
+        self.tooltip_annotation.set_bbox(dict(facecolor='lightgrey', alpha=0.5, edgecolor='darkgrey', boxstyle="round"))
+        self.tooltip_annotation.set_visible(False)
 
     def get_current_centroids_Line2D(self):
         """
@@ -956,3 +968,12 @@ def update_distances_parameter_silhouette_analysis(current_plot_container, x_coo
         line_next.set(visible=True)
     current_plot_container.silhouette_analysis_distances_objects[3][
         current_plot_container.silhouette_analysis_last_clicked].set(visible=True)
+
+
+def update_tooltip_annotation(current_plot_container, x_coord=None, y_coord=None):
+    if x_coord is not None and y_coord is not None:
+        current_plot_container.tooltip_annotation.xy = (x_coord, y_coord)
+        current_plot_container.tooltip_annotation.set_text("(" + str(x_coord)[:5] + ", " + str(y_coord)[:5] + ")")
+        current_plot_container.tooltip_annotation.set_visible(True)
+    else:
+        current_plot_container.tooltip_annotation.set_visible(False)

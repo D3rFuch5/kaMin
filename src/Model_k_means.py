@@ -107,6 +107,7 @@ def calculate_centroids(dataset_split_by_centroid):
     return calculated_centroids
 
 
+
 def change_to_clusters(dataset_split_old, dataset_split_new):
     # Im ersten Durchlauf gab es noch keine Aufteilung der Datenpunkte aus dem vorherigen Durchlauf, d.h.
     # dataset_split_old = {}. Ist nun dataset_split_new auch {} hat es logischerweise keine Änderung gegeben, da es
@@ -194,18 +195,19 @@ def calculate_final_clusters(dataset, initial_centroids):
     return clusters_current_centroids
 
 
-def calculate_WCSS(FINAL_CLUSTERS_data_split):
+def calculate_WCSS(current_centroids, data_split):
     """
-    Berechnet die Within-Cluster Sum of Squares (WCSS) für die übergebenen finalen Cluster-Zentren und zugehörigen
+    Berechnet die Within-Cluster Sum of Squares (WCSS) für die übergebenen Cluster-Zentren und
     Teildatensätze.
-    :param FINAL_CLUSTERS_data_split: Dictionary: key => finales Cluster-Zentrum als Tupel;
+    :param current_centroids: Liste der aktuellen Cluster-Zentren
+    :param data_split: Dictionary: key =>  Cluster-Zentrum als Tupel;
                                                    value => Liste von Tupeln, die den zum Cluster-Zentrum gehörenden
                                                             Teildatensatz darstellt.
     :return: WCSS-Wert für die übergebenen Cluster-Zentren und deren zugeordnete Teildatensätze.
     """
     within_cluster_sum_of_squares = 0
-    for centroid in FINAL_CLUSTERS_data_split:
-        for d_elm in FINAL_CLUSTERS_data_split[centroid]:
+    for centroid, key in zip(current_centroids, data_split):
+        for d_elm in data_split[key]:
             within_cluster_sum_of_squares += squared_euclidean_distance(point1=centroid, point2=d_elm)
     return within_cluster_sum_of_squares
 
@@ -260,7 +262,7 @@ def elbow_analysis(dataset, max_value_of_k):
         # Falls die Berechnung länger als 2 Minuten dauert, wird eine Exception geworfen
         if time.time() - time_start > 120:
             raise src.Exceptions.CalculationTooLong
-    return [calculate_WCSS(FINAL_CLUSTERS_data_split=split_set) for split_set in
+    return [calculate_WCSS(current_centroids=list(split_set.keys()), data_split=split_set) for split_set in
             list_final_clusters_dataset_split_dicts], list_final_clusters_dataset_split_dicts
 
 

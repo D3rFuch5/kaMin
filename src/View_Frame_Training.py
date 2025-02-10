@@ -117,9 +117,12 @@ class Frame_Training(tk.Frame):
         self.lbl_distB = None
         self.prog_bar_display_distB = None
 
+        self.frm_display_centroid_information = None
         self.frm_display_centroids = None
         self.treeview_centroids = None
         self.scrollbar_vertical_display_centroids = None
+        self.frm_display_WCSS = None
+        self.lbl_WCSS = None
 
         # Widgets für die Anzeige der Analyse
         self.selected_analysis_mode = None
@@ -472,10 +475,15 @@ class Frame_Training(tk.Frame):
                                                       style="red.ColorProgress.Horizontal.TProgressbar")
         self.prog_bar_display_distB.grid(column=1, row=1, sticky="ew")
 
-        self.frm_display_centroids = tk.LabelFrame(master=self.frm_display_model_container,
-                                                   text="Cluster-Zentren:",
-                                                   font=View_Window.default_FONT_BOLD, borderwidth=0, bg="white")
-        self.frm_display_centroids.grid(column=1, row=0, sticky="ns", pady=(5, 0))
+        self.frm_display_centroid_information = tk.Frame(master=self.frm_display_model_container,borderwidth=0, bg="white")
+        self.frm_display_centroid_information.grid(column=1, row=0, sticky="ns", pady=(5, 0))
+        # Ausdehnung der Anzeige maximal nach unten
+        self.frm_display_centroid_information.rowconfigure(index=0, weight=1)
+
+        self.frm_display_centroids = tk.LabelFrame(master=self.frm_display_centroid_information,
+                                                              text="Cluster-Zentren:",
+                                                              font=View_Window.default_FONT_BOLD, borderwidth=0, bg="white")
+        self.frm_display_centroids.grid(column=0, row=0, sticky="ns", pady=(5, 0))
         # Ausdehnung der Treeview maximal nach unten
         self.frm_display_centroids.rowconfigure(index=0, weight=1)
 
@@ -488,6 +496,16 @@ class Frame_Training(tk.Frame):
         self.scrollbar_vertical_display_centroids.config(command=self.treeview_centroids.yview)
         self.scrollbar_vertical_display_centroids.grid(column=1, row=0, sticky="ens")
         self.treeview_centroids.configure(yscrollcommand=self.scrollbar_vertical_display_centroids.set)
+
+        self.frm_display_WCSS = tk.LabelFrame(master=self.frm_display_centroid_information,
+                                                   text="Within Cluster Squared Sum:",
+                                                   font=View_Window.default_FONT_BOLD, borderwidth=0, bg="white")
+        # Initial ausgeblendet
+        # self.frm_display_WCSS.grid(column=0, row=1, sticky="new")
+        self.lbl_WCSS = tk.Label(master=self.frm_display_WCSS, text="Noch nicht berechnet.", bg="white", font=View_Window.default_FONT)
+        self.lbl_WCSS.grid(column=0, row=0, sticky="new")
+
+
 
     def init_frame_display_analysis(self):
         self.selected_analysis_mode = tk.StringVar()
@@ -823,6 +841,7 @@ class Frame_Training(tk.Frame):
         """
         return self.current_plot_model.get_current_centroids_Line2D()
 
+
     def get_data_selection_mode(self):
         """
         Gibt den momentan ausgewählten Dateieingabemodus zurück.
@@ -851,6 +870,22 @@ class Frame_Training(tk.Frame):
         """
         self.slider_parameter_k.set(value=value)
 
+    def update_view_WCSS_enable(self, enable):
+        if enable:
+            self.lbl_WCSS['state'] = tk.NORMAL
+        else:
+            self.lbl_WCSS['state'] = tk.DISABLED
+
+    def set_value_WCSS(self, value=None):
+        """
+        Setzt den Wert des Anzeigelabels der WCSS auf den übergebenen Wert oder einen Default-Text.
+        :param value: zu setzender Wert der WCSS; Default: None
+        """
+        if value is None:
+            self.lbl_WCSS.config(text="Noch nicht berechnet.")
+        else:
+            self.lbl_WCSS.config(text="WCSS: " + str(value))
+
     def update_view_train_mode(self, enable_train_mode, clusters_found):
         """
         Passt die View an in Abhängigkeit, ob der Trainingsmodus aktiv ist oder nicht.
@@ -869,6 +904,9 @@ class Frame_Training(tk.Frame):
             self.com_box_data_input_mode['state'] = tk.DISABLED
             self.ck_btn_show_centroid_history['state'] = tk.NORMAL
             self.ck_btn_show_decision_areas['state'] = tk.NORMAL
+            self.lbl_WCSS['state'] = tk.DISABLED
+            self.set_value_WCSS(value=None)
+            self.frm_display_WCSS.grid(column=0, row=1, sticky="new")
         else:
             self.btn_initiate_train_mode.configure(text="Training beginnen")
             self.com_box_data_input_mode['state'] = "readonly"
@@ -878,6 +916,7 @@ class Frame_Training(tk.Frame):
             self.algorithm_step_training_active.set(False)
             self.ck_btn_show_centroid_history['state'] = tk.DISABLED
             self.ck_btn_show_decision_areas['state'] = tk.DISABLED
+            self.frm_display_WCSS.grid_forget()
 
         self.menu_app_mode['state'] = state_other_controls
         self.btn_choose_data_file['state'] = state_other_controls
@@ -1258,6 +1297,7 @@ class Frame_Training(tk.Frame):
         self.btn_calculate_analysis['state'] = state_controls
         self.btn_initiate_parameter_analysis['state'] = state_controls
 
+
     def init_treeview_centroids(self, number_of_columns, space_in_px):
         """
         Initialisiert die Treeview zu Anzeige der Cluster-Zentren, auf einer Breite von space_in_px und mit
@@ -1538,3 +1578,11 @@ class Frame_Training(tk.Frame):
         Zeichnet die Anzeigefläche des Parametergraphen neu.
         """
         self.canvas_display_analysis.draw()
+
+    def update_tooltip(self, show_tooltip=False):
+        """
+        Ein- bzw. Ausblenden des Tooltips zur Anzeige der Punktkoordinaten on Hover.
+        :param show_tooltip: True, wenn der Tooltip angezeigt werden soll; False, sonst
+        """
+        self.current_plot_model.tooltip_annotation.set_visible(show_tooltip)
+        self.redraw_model()

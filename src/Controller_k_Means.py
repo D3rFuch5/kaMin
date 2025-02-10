@@ -71,6 +71,10 @@ class Controller_k_Means:
         self.view_main_frame.update_view_train_mode(enable_train_mode=self.train_mode_active, clusters_found=False)
         self.bind_view_button_commands()
 
+        # Attribute zur Realisierung des Hover-Effekts
+        self.current_shown = None
+        self.ID_CALLBACK_Hover_event = None
+
     def reset_simulation_k_means(self):
         """
         Setzt die Attribute auf die Initialwerte und zeigt den initial sichtbaren Zustand der Oberfläche an.
@@ -290,6 +294,7 @@ class Controller_k_Means:
                 # (final_centroids_found=False)
                 self.view_main_frame.update_view_train_mode(enable_train_mode=self.train_mode_active,
                                                             clusters_found=False)
+
                 # Hinzufügen der aktuellen Cluster-Zentren zur Historie, da dies nun auch die Zentren sind, welche im
                 # Training verwendet werden sollen
                 self.centroid_history.append(self.current_centroids)
@@ -425,6 +430,7 @@ class Controller_k_Means:
         self.current_dataset_split_for_centroids = Model_k_means.calculate_data_objects_for_centroids(
             distance_function=Model_k_means.squared_euclidean_distance, current_centroids=self.current_centroids,
             dataset=self.read_in_dataset)
+        self.view_main_frame.update_view_WCSS_enable(enable=False)
         # Setzen des als nächsten auszuführenden Schritt
         self.algorithm_step_one = False
 
@@ -444,7 +450,9 @@ class Controller_k_Means:
         # Setzen des als nächsten auszuführenden Schritt
         self.algorithm_step_one = True
         self.auto_mode_train_step = self.auto_mode_train_step + 1
-
+        self.view_main_frame.set_value_WCSS(value=Model_k_means.calculate_WCSS(current_centroids=self.current_centroids,
+                                                                               data_split=self.current_dataset_split_for_centroids))
+        self.view_main_frame.update_view_WCSS_enable(enable=True)
         # centroid_history beinhaltet mindestens zwei Elemente (mind. die initialen Cluster-Zentren und die Cluster-
         # Zentren, die in diesem Trainingsschritt berechnet wurden)
         return Model_k_means.change_to_clusters(dataset_split_old=self.previous_dataset_split_for_centroids,
@@ -505,6 +513,8 @@ class Controller_k_Means:
                 self.view_main_frame.update_plot_auto_mode(
                     split_dataset_centroids=self.current_dataset_split_for_centroids,
                     number_of_step=self.auto_mode_train_step)
+                self.view_main_frame.update_view_WCSS_enable(enable=False)
+                self.view_main_frame.set_value_WCSS(value=None)
 
             # Andernfalls befinden wir uns im Trainingsverlauf
             else:
@@ -539,6 +549,10 @@ class Controller_k_Means:
                             split_dataset_centroids=self.current_dataset_split_for_centroids,
                             number_of_step=self.auto_mode_train_step)
                     self.algorithm_step_one = True
+                    self.view_main_frame.set_value_WCSS(
+                        value=Model_k_means.calculate_WCSS(current_centroids=self.current_centroids,
+                                                           data_split=self.current_dataset_split_for_centroids))
+                    self.view_main_frame.update_view_WCSS_enable(enable=True)
         # Falls die finalen Cluster noch nicht erstmalig gefunden wurden, muss zuerst die Historie während des
         # Trainingsprozesses aufgebaut werden
         else:
@@ -809,8 +823,12 @@ class Controller_k_Means:
                 # Mouse Pressed wird hier nicht benötigt
                 self.ID_CALLBACK_Pick_event = self.view_main_frame.canvas_display_model.figure.canvas.mpl_connect(
                     'pick_event', self.select_unselect_centroid_on_click)
+                # Hover-Event aktivieren
+                self.ID_CALLBACK_Hover_event = self.view_main_frame.canvas_display_model.figure.canvas.mpl_connect(
+                    'motion_notify_event', self.show_tooltip_on_hover)
             else:
                 self.unbind_callbacks_canvas()
+                self.unbind_callbacks_hover()
                 # Entsperren der Eingabe
                 self.view_main_frame.btn_activate_selection_of_centroids_on_click.update()
                 self.view_main_frame.update_view_centroid_selection_on_click(
@@ -1206,3 +1224,37 @@ class Controller_k_Means:
             self.view_main_frame.canvas_display_model.figure.canvas.mpl_disconnect(
                 self.ID_CALLBACK_Mouse_Pressed_event)
             self.ID_CALLBACK_Mouse_Pressed_event = None
+
+    def unbind_callbacks_hover(self):
+        """
+        Entfernt die Bindung der ggf. in den Attributen ID_CALLBACK_Hover_event gespeicherten Event-Callbackfunktionen.
+        """
+        if self.ID_CALLBACK_Hover_event:
+            self.view_main_frame.canvas_display_model.figure.canvas.mpl_disconnect(
+                self.ID_CALLBACK_Hover_event)
+            self.ID_CALLBACK_Hover_event = None
+            self.view_main_frame.update_tooltip(show_tooltip=False)
+
+    def show_tooltip_on_hover(self, event):
+        """
+        Regelt das Ein/Ausblenden des Tooltips zur Anzeige der Punktkoordinaten
+        :param event: auslösendes Event
+        """
+        if event.inaxes == self.view_main_frame.current_plot_model.plot_axes:
+            found = False
+            for d_point in self.view_main_frame.get_dataset_Line2D():
+                cont, ind = d_point.contains(event)
+                if cont:
+                    found = True
+                    if d_point is not self.current_shown:
+                        # Falls der Cursor auf einem Punkt liegt und dieser nicht der bereits angezeigte Punkt ist
+                        self.current_shown = d_point
+                        Plot_Utils_Model.update_tooltip_annotation(self.view_main_frame.current_plot_model,
+                                                                   x_coord=d_point.get_data()[0][0],
+                                                                   y_coord=d_point.get_data()[1][0])
+                        self.view_main_frame.update_tooltip(show_tooltip=True)
+                    break
+            # Ausblenden, wenn der Cursor auf keinem der Punkte liegt
+            if not found:
+                self.current_shown = None
+                self.view_main_frame.update_tooltip(show_tooltip=False)
