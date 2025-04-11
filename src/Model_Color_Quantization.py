@@ -29,7 +29,7 @@ def quantize_image_general(value_k, image_as_array):
     assert t == 3
     # Überführt das Bild in ein 2D-Array mit je einer Zeile pro Pixel. Die Einträge der Zeile sind die
     # RGB-Werte des entsprechenden Pixels/Punkts
-    image_array_2D = np.reshape(a=image_as_array, newshape=(l * b, t))
+    image_array_2D = np.reshape(image_as_array, (l * b, t))
 
     # Subset für Training auswählen!NICHT VERWENDET!
     # image_array_2D_sample = shuffle(image_array_2D, random_state=0, n_samples=1_000)
@@ -50,7 +50,7 @@ def quantize_image_general(value_k, image_as_array):
     # Normierung der Einträge des farbreduzierten Bilds in den Bereich [0..1], da imshow von Matplotlib nur mit
     # floats im Bereich [0..1] oder int im Bereich [0..255] arbeiten kann. Da die Cluster-Zentren der Vorhersage aber
     # floats sind, muss hier noch normiert werden.
-    return np.reshape(a=image_array_2D_quantized, newshape=(l, b, t)) / 255
+    return np.reshape(image_array_2D_quantized, (l, b, t)) / 255
 
 
 def quantize_color_channels(value_k, colors_array, image_as_array):
@@ -89,13 +89,12 @@ def quantize_color_channels(value_k, colors_array, image_as_array):
     assert t == 3
     # Überführt das Bild in ein 2D-Array mit je einer Zeile pro Pixel. Die Einträge der Zeile sind die
     # RGB-Werte des entsprechenden Pixels/Punkts
-    image_array_2D = np.reshape(a=image_as_array, newshape=(l * b, t))
+    image_array_2D = np.reshape(image_as_array, (l * b, t))
     image_array_2D_quantized = kmeans.cluster_centers_[kmeans.predict(X=image_array_2D)]
     # Normierung der Einträge des farbreduzierten Bilds in den Bereich [0..1], da imshow von Matplotlib nur mit
     # floats im Bereich [0..1] oder int im Bereich [0..255] arbeiten kann. Da die Cluster-Zentren der Vorhersage aber
     # floats sind, muss hier noch normiert werden.
-    return np.reshape(a=image_array_2D_quantized,
-                      newshape=(l, b, t)) / 255, colors_array_quantized, kmeans.cluster_centers_
+    return np.reshape(image_array_2D_quantized,(l, b, t)) / 255, colors_array_quantized, kmeans.cluster_centers_
 
 
 def remove_color_channel(image_as_array, color_channels):
@@ -133,6 +132,6 @@ def get_color_samples_of_image(image_as_array):
              bestimmt.
     """
     l, b, t = image_as_array.shape
-    image_as_array_2D = np.unique(np.reshape(a=image_as_array, newshape=(l * b, t)), axis=0)
+    image_as_array_2D = np.unique(np.reshape(image_as_array, (l * b, t)), axis=0)
     return shuffle(image_as_array_2D, random_state=0,
                    n_samples=min(DEFAULT_NUMBER_OF_COLOR_SAMPLES, len(image_as_array_2D)))
